@@ -3,6 +3,12 @@ import { useState, useEffect } from 'react';
 import Post from './components/Post';
 import Submit from './components/Submit';
 
+const sortedDates = (a, b) => {
+  const dateA = new Date(a.date);
+  const dateB = new Date(b.date);
+  return dateA - dateB;
+};
+
 function App() {
   const [posts, setPosts] = useState([]);
 
@@ -11,7 +17,7 @@ function App() {
       try {
         const response = await fetch('http://localhost:3000/posts');
         const result = await response.json();
-        setPosts(result);
+        setPosts(result.sort(sortedDates));
       } catch (error) {
         console.error('Error fetching data:', error);
       }

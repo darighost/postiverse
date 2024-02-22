@@ -1,12 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+const axios = require('axios');
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
 app.use(cors());
 
-const peers = []
+const peers = ['127.0.0.1:3002']
 const posts = []
 const profile = {
   avatar: 'https://i.imgur.com/N3zJZfB.png',
@@ -15,19 +16,18 @@ const profile = {
 }
 const domain = 'localhost'
 
-app.post('/peers', (req, res) => {
-  const { metadata } = req.body;
-  peers.push(metadata)
-  return res.status(201).json(
-    { success: true, message: 'Peer signed up successfully' });
-});
-
-app.get('/peers', (_req, res) => {
-  res.json(peers);
-});
-
-app.get('/posts', (_req, res) => {
-  res.json(posts);
+app.get('/posts', async (req, res) => {
+  try {
+    let allPosts = [];
+    for (const hostname of peers) {
+      const response = await axios.get(`http://${hostname}/posts`);
+      allPosts = allPosts.concat(response.data).concat(posts);
+    }
+    res.json(allPosts);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 app.post('/posts', (req, res) => {
